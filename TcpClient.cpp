@@ -6,7 +6,9 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 #define DEFAULT_PORT "23"
-#define DEFAULT_BUFLEN 512
+#define DEFAULT_BUFLEN 2048
+using std::cout;
+using std::endl;
 
 int main(int argc, char** argv) {
 	bool nomessage = false;
@@ -66,6 +68,7 @@ int main(int argc, char** argv) {
 	const char* sendbuf = argv[3];
 	const char* empty = "";
 	char recvbuf[DEFAULT_BUFLEN];
+	ZeroMemory(&recvbuf, DEFAULT_BUFLEN);
 	if (nomessage == true) {
 		iResult = send(ConnectSocket, empty, 0, 0);
 	}
@@ -88,7 +91,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	do {
-		if (iResult > 512) {
+		if (iResult > DEFAULT_BUFLEN) {
 			std::cout << "Response too big." << std::endl;
 			return 1;
 		}
@@ -97,21 +100,19 @@ int main(int argc, char** argv) {
 		}
 		if (iResult > 0) {
 			printf("Bytes received %d\n", iResult);
-			for (int i = 0; i < 512; i++) {
-				if (recvbuf[i - 1] != '*') {
-					std::cout << recvbuf[i];
+			cout << (int)strlen(recvbuf);
+			for (int i = 0; i < DEFAULT_BUFLEN; i++) {
+				if (recvbuf[i] == '\0') {
+					break;
 				}
 				else {
-					std::cout << std::endl;
-					break;
+					cout << recvbuf[i];
 				}
 			}
 		}
-
 		else if (iResult == 0) {
-			printf("Connetion closed\n");
+			printf("Connection closed\n");
 		}
-
 		else {
 			printf("recv failed: %d\n", WSAGetLastError());
 		}
